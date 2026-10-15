@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client for Cloud Database -->
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -22,7 +22,6 @@
         }
         .logo-pulse { animation: pulse-ring 2s infinite ease-in-out; }
     </style>
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlByb0ZpbmFuY2UgRGVsdXhlIiwKICAic2hvcnRfbmFtZSI6ICJQcm9GaW5hbmNlIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmOGZhZmMiLAogICJ0aGVtZV9jb2xvciI6ICIjNGYzNmRkIgp9">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
@@ -54,11 +53,11 @@
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Username / Email</label>
-                    <input type="text" id="loginUsername" required value="admin@profinance.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    <input type="text" id="loginUsername" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" placeholder="Enter username">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Password</label>
-                    <input type="password" id="loginPassword" required value="123456" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" placeholder="Enter password">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-200 text-sm flex items-center justify-center space-x-2">
                     <span>Login to Console</span>
@@ -66,7 +65,7 @@
                 </button>
             </form>
             <div class="mt-6 text-center">
-                <p class="text-xs text-slate-400">Demo Credentials Pre-filled. Click Login.</p>
+                <p class="text-xs text-slate-500">Default Credentials: <span class="font-bold text-indigo-600">admin</span> / <span class="font-bold text-indigo-600">123456</span></p>
             </div>
         </div>
     </div>
@@ -82,7 +81,7 @@
                 <p class="text-xs text-slate-500 mt-0.5">Enter 4-Digit Passcode</p>
             </div>
             <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center tracking-widest text-2xl font-bold py-2 border-b-2 border-indigo-500 focus:outline-none">
-            <button onclick="unlockWithPin()" class="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">Unlock</button>
+            <button onclick="unlockWithPin()" class="w-full bg-indigo-600 text-white py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">Unlock App</button>
         </div>
     </div>
 
@@ -115,26 +114,23 @@
                     <button onclick="switchTab('recharge')" id="nav-recharge" class="nav-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Recharge</button>
                     <button onclick="switchTab('loans')" id="nav-loans" class="nav-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Loans</button>
                     <button onclick="switchTab('banks')" id="nav-banks" class="nav-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Banks & Cash</button>
+                    <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"><i class="fa-solid fa-gear mr-1"></i> Settings</button>
                 </nav>
 
                 <!-- Actions Header Right -->
                 <div class="flex items-center space-x-3">
-                    <!-- Smart Notifications Bell -->
                     <div class="relative">
                         <button onclick="toggleNotificationsModal()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg relative">
                             <i class="fa-solid fa-bell"></i>
                             <span id="notifBadge" class="hidden absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
                         </button>
                     </div>
-                    <!-- Cloud Config -->
                     <button onclick="openDbConfigModal()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg text-sm" title="Database Settings">
                         <i class="fa-solid fa-database"></i>
                     </button>
-                    <!-- Security Lock -->
                     <button onclick="lockApp()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg text-sm" title="Lock App">
                         <i class="fa-solid fa-lock"></i>
                     </button>
-                    <!-- Logout -->
                     <button onclick="handleLogout()" class="text-rose-600 hover:text-rose-700 text-xs font-semibold bg-rose-50 px-3 py-2 rounded-lg border border-rose-100 transition flex items-center space-x-1">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="hidden sm:inline">Logout</span>
@@ -142,7 +138,7 @@
                 </div>
             </div>
 
-            <!-- Mobile Drawer Menu Overlay -->
+            <!-- Mobile Menu Overlay -->
             <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 py-3 space-y-1">
                 <button onclick="switchTab('dashboard')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Dashboard</button>
                 <button onclick="switchTab('income')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Income</button>
@@ -151,6 +147,7 @@
                 <button onclick="switchTab('recharge')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Recharge</button>
                 <button onclick="switchTab('loans')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Loans</button>
                 <button onclick="switchTab('banks')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Banks & Cash</button>
+                <button onclick="switchTab('settings')" class="block w-full text-left py-2 px-3 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Settings</button>
             </div>
         </header>
 
@@ -160,34 +157,49 @@
             <!-- 📊 TAB 1: DASHBOARD -->
             <div id="tab-dashboard" class="tab-content space-y-6">
                 <!-- Summary KPI Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Income</p>
-                            <h3 id="dashTotalIncome" class="text-2xl font-bold text-emerald-600 mt-1">₹0.00</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Income</p>
+                            <h3 id="dashTotalIncome" class="text-xl font-bold text-emerald-600 mt-1">₹0.00</h3>
                         </div>
                         <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-arrow-trend-up"></i></div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Expenses</p>
-                            <h3 id="dashTotalExpense" class="text-2xl font-bold text-rose-600 mt-1">₹0.00</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Expenses</p>
+                            <h3 id="dashTotalExpense" class="text-xl font-bold text-rose-600 mt-1">₹0.00</h3>
                         </div>
                         <div class="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-arrow-trend-down"></i></div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Net Balance</p>
-                            <h3 id="dashBalance" class="text-2xl font-bold text-indigo-600 mt-1">₹0.00</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Bank Balance</p>
+                            <h3 id="dashBankBalance" class="text-xl font-bold text-blue-600 mt-1">₹0.00</h3>
                         </div>
-                        <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-building-columns"></i></div>
                     </div>
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Liquid Cash</p>
-                            <h3 id="dashCashBalance" class="text-2xl font-bold text-amber-600 mt-1">₹0.00</h3>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Liquid Cash</p>
+                            <h3 id="dashCashBalance" class="text-xl font-bold text-amber-600 mt-1">₹0.00</h3>
                         </div>
                         <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-money-bill-wave"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Net Total Wealth</p>
+                            <h3 id="dashBalance" class="text-xl font-bold text-indigo-600 mt-1">₹0.00</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                </div>
+
+                <!-- Individual Bank Accounts Dashboard Quick Grid -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center"><i class="fa-solid fa-university text-indigo-600 mr-2"></i> Bank Accounts Overview</h2>
+                    <div id="dashBankListGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated Dynamically -->
                     </div>
                 </div>
 
@@ -221,7 +233,6 @@
 
             <!-- 🟢 TAB 2: INCOME MODULE -->
             <div id="tab-income" class="tab-content hidden space-y-6">
-                <!-- TOP: Record Income Form -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-3xl mx-auto">
                     <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center"><i class="fa-solid fa-circle-plus text-emerald-600 mr-2"></i> Record Income</h2>
                     <form onsubmit="addIncomeRecord(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -249,7 +260,7 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Note / Description</label>
-                            <input type="text" id="incNote" placeholder="e.g., October Monthly Salary" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                            <input type="text" id="incNote" placeholder="e.g., Monthly Salary" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
                         </div>
                         <div class="sm:col-span-2">
                             <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-sm">Save Income Entry</button>
@@ -257,7 +268,6 @@
                     </form>
                 </div>
 
-                <!-- BOTTOM: Income History Ledger -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-bold text-slate-900">Income Ledger History</h2>
                     <div class="overflow-x-auto">
@@ -280,7 +290,6 @@
 
             <!-- 🔴 TAB 3: EXPENSE MODULE -->
             <div id="tab-expense" class="tab-content hidden space-y-6">
-                <!-- TOP: Record Expense Form -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-3xl mx-auto">
                     <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center"><i class="fa-solid fa-circle-minus text-rose-600 mr-2"></i> Record Expense</h2>
                     <form onsubmit="addExpenseRecord(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -310,7 +319,7 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Note / Description</label>
-                            <input type="text" id="expNote" placeholder="e.g., Grocery Shopping" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                            <input type="text" id="expNote" placeholder="e.g., Grocery Purchase" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
                         </div>
                         <div class="sm:col-span-2">
                             <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-sm">Save Expense Entry</button>
@@ -318,7 +327,6 @@
                     </form>
                 </div>
 
-                <!-- BOTTOM: Expense History Ledger -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-bold text-slate-900">Expense Ledger History</h2>
                     <div class="overflow-x-auto">
@@ -350,7 +358,6 @@
                         </div>
                     </div>
 
-                    <!-- Search & Filter Bar -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                         <input type="text" id="txnSearchInput" oninput="filterMasterLedger()" placeholder="Search description..." class="px-3 py-2 border border-slate-200 rounded-xl text-xs">
                         <select id="txnTypeFilter" onchange="filterMasterLedger()" class="px-3 py-2 border border-slate-200 rounded-xl text-xs">
@@ -383,7 +390,6 @@
 
             <!-- 📱 TAB 5: TELECOM RECHARGE -->
             <div id="tab-recharge" class="tab-content hidden space-y-6">
-                <!-- TOP: Recharge Form -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-xl mx-auto">
                     <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center"><i class="fa-solid fa-mobile-screen-button text-indigo-600 mr-2"></i> Indian Telecom Recharge</h2>
                     <form onsubmit="processRecharge(event)" class="space-y-4">
@@ -414,7 +420,6 @@
                     </form>
                 </div>
 
-                <!-- BOTTOM: Recharge History -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-bold text-slate-900">Recharge History</h2>
                     <div class="overflow-x-auto">
@@ -435,7 +440,6 @@
 
             <!-- 💳 TAB 6: LOANS & DUE DATES -->
             <div id="tab-loans" class="tab-content hidden space-y-6">
-                <!-- TOP: Add Loan Form -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-2xl mx-auto">
                     <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center"><i class="fa-solid fa-hand-holding-dollar text-indigo-600 mr-2"></i> Record Loan Entry</h2>
                     <form onsubmit="addLoanEntry(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -464,7 +468,6 @@
                     </form>
                 </div>
 
-                <!-- BOTTOM: Loans Ledger Table -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-bold text-slate-900">Active Loans Ledger</h2>
                     <div class="overflow-x-auto">
@@ -488,7 +491,6 @@
 
             <!-- 🏦 TAB 7: BANKS & CASH MANAGEMENT -->
             <div id="tab-banks" class="tab-content hidden space-y-6">
-                <!-- TOP: Add Bank & Adjust Cash Forms -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                         <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-building-columns text-indigo-600 mr-2"></i> Add New Bank Account</h2>
@@ -521,7 +523,6 @@
                     </div>
                 </div>
 
-                <!-- BOTTOM: Bank Accounts Ledger -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <h2 class="text-base font-bold text-slate-900">Configured Bank Accounts</h2>
                     <div class="overflow-x-auto">
@@ -540,11 +541,44 @@
                 </div>
             </div>
 
+            <!-- ⚙️ TAB 8: SETTINGS & SECURITY -->
+            <div id="tab-settings" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-user-gear text-indigo-600 mr-2"></i> Update Credentials</h2>
+                        <form onsubmit="updateCredentials(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+                                <input type="text" id="setUsername" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">New Password</label>
+                                <input type="password" id="setPassword" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-xl text-xs hover:bg-indigo-700 transition">Update Login Details</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-shield-halved text-indigo-600 mr-2"></i> App Passcode PIN Security</h2>
+                        <form onsubmit="updatePinCode(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Set 4-Digit Passcode PIN</label>
+                                <input type="password" id="setPinInput" maxlength="4" placeholder="e.g. 1234" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs tracking-widest text-center font-bold">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button type="submit" class="flex-1 bg-indigo-600 text-white font-semibold py-2 rounded-xl text-xs hover:bg-indigo-700 transition">Save PIN</button>
+                                <button type="button" onclick="clearPinCode()" class="flex-1 bg-rose-50 text-rose-600 font-semibold py-2 rounded-xl text-xs hover:bg-rose-100 transition border border-rose-100">Remove PIN</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <!-- ================= 5. MODALS & POPUPS ================= -->
-    <!-- Delete Confirmation Modal -->
+    <!-- Modals -->
     <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
             <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -561,14 +595,12 @@
         </div>
     </div>
 
-    <!-- Cloud Database Settings Modal -->
     <div id="dbConfigModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 flex items-center"><i class="fa-solid fa-cloud text-indigo-600 mr-2"></i> Cloud DB Config (Supabase)</h3>
                 <button onclick="closeDbConfigModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500">Connect your Supabase Cloud Database to sync transactions across all your devices.</p>
             <form onsubmit="saveDbConfig(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Project URL</label>
@@ -579,14 +611,13 @@
                     <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOi..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
                 </div>
                 <div class="flex justify-between items-center pt-2">
-                    <button type="button" onclick="resetToLocalStorage()" class="text-xs text-rose-600 font-semibold hover:underline">Reset to Local Storage</button>
+                    <button type="button" onclick="resetToLocalStorage()" class="text-xs text-rose-600 font-semibold hover:underline">Reset Local Storage</button>
                     <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-indigo-700">Save & Connect</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Loan Repay Modal -->
     <div id="loanRepayModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
             <h3 class="font-bold text-slate-900">Record Loan Repayment</h3>
@@ -604,7 +635,6 @@
         </div>
     </div>
 
-    <!-- Notifications Modal -->
     <div id="notifModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -615,25 +645,30 @@
         </div>
     </div>
 
-    <!-- JavaScript Application Core Logic -->
     <script>
-        // State & Storage Init
         let transactions = JSON.parse(localStorage.getItem('pf_transactions')) || [];
         let loans = JSON.parse(localStorage.getItem('pf_loans')) || [];
         let bankAccounts = JSON.parse(localStorage.getItem('pf_banks')) || [{ id: 1, name: 'SBI Bank', accNo: '4321', balance: 25000 }];
         let cashBalance = parseFloat(localStorage.getItem('pf_cash')) || 10000;
+        
+        let storedUser = localStorage.getItem('pf_auth_user') || 'admin';
+        let storedPass = localStorage.getItem('pf_auth_pass') || '123456';
+        let storedPin = localStorage.getItem('pf_auth_pin') || '';
+
         let currentUser = localStorage.getItem('pf_user') || null;
         let deleteTargetId = null;
         let deleteTargetType = null;
         let supabaseClient = null;
 
-        // Initialize App on Page Load
         window.onload = function() {
             updateClock();
             setInterval(updateClock, 1000);
 
             document.getElementById('incDate').valueAsDate = new Date();
             document.getElementById('expDate').valueAsDate = new Date();
+
+            document.getElementById('setUsername').value = storedUser;
+            document.getElementById('setPinInput').value = storedPin;
 
             initSupabase();
 
@@ -647,7 +682,6 @@
             document.getElementById('liveDateTime').innerText = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' • ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Supabase DB Configuration
         function initSupabase() {
             const url = localStorage.getItem('pf_sp_url');
             const key = localStorage.getItem('pf_sp_key');
@@ -656,12 +690,8 @@
                     supabaseClient = window.supabase.createClient(url, key);
                     document.getElementById('dbStatusBadge').innerText = "Connected (Cloud)";
                     document.getElementById('dbStatusBadge').className = "bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded-full";
-                } catch(e) {
-                    setOfflineBadge();
-                }
-            } else {
-                setOfflineBadge();
-            }
+                } catch(e) { setOfflineBadge(); }
+            } else { setOfflineBadge(); }
         }
 
         function setOfflineBadge() {
@@ -674,10 +704,8 @@
 
         function saveDbConfig(e) {
             e.preventDefault();
-            const url = document.getElementById('supabaseUrlInput').value;
-            const key = document.getElementById('supabaseKeyInput').value;
-            localStorage.setItem('pf_sp_url', url);
-            localStorage.setItem('pf_sp_key', key);
+            localStorage.setItem('pf_sp_url', document.getElementById('supabaseUrlInput').value);
+            localStorage.setItem('pf_sp_key', document.getElementById('supabaseKeyInput').value);
             initSupabase();
             closeDbConfigModal();
         }
@@ -690,12 +718,18 @@
             closeDbConfigModal();
         }
 
-        // Authentication & Splash Loader
         function handleLogin(e) {
             e.preventDefault();
-            currentUser = document.getElementById('loginUsername').value;
-            localStorage.setItem('pf_user', currentUser);
-            showAppWithSplash();
+            const u = document.getElementById('loginUsername').value;
+            const p = document.getElementById('loginPassword').value;
+
+            if (u === storedUser && p === storedPass) {
+                currentUser = u;
+                localStorage.setItem('pf_user', currentUser);
+                showAppWithSplash();
+            } else {
+                alert('Invalid Username or Password!');
+            }
         }
 
         function handleLogout() {
@@ -713,10 +747,51 @@
                 document.getElementById('loadingSplash').classList.add('hidden');
                 document.getElementById('appContainer').classList.remove('hidden');
                 refreshUI();
-            }, 1200);
+            }, 1000);
         }
 
-        // Navigation
+        function updateCredentials(e) {
+            e.preventDefault();
+            storedUser = document.getElementById('setUsername').value;
+            storedPass = document.getElementById('setPassword').value;
+            localStorage.setItem('pf_auth_user', storedUser);
+            localStorage.setItem('pf_auth_pass', storedPass);
+            alert('Username and Password updated successfully!');
+        }
+
+        function updatePinCode(e) {
+            e.preventDefault();
+            storedPin = document.getElementById('setPinInput').value;
+            localStorage.setItem('pf_auth_pin', storedPin);
+            alert(storedPin ? 'Passcode PIN saved!' : 'Passcode PIN cleared.');
+        }
+
+        function clearPinCode() {
+            storedPin = '';
+            document.getElementById('setPinInput').value = '';
+            localStorage.removeItem('pf_auth_pin');
+            alert('Passcode PIN removed.');
+        }
+
+        function lockApp() {
+            if(!storedPin) {
+                alert('Please set a 4-Digit PIN in Settings first!');
+                switchTab('settings');
+                return;
+            }
+            document.getElementById('pinLockScreen').classList.remove('hidden');
+            document.getElementById('pinInput').value = '';
+        }
+
+        function unlockWithPin() {
+            const pin = document.getElementById('pinInput').value;
+            if(pin === storedPin) {
+                document.getElementById('pinLockScreen').classList.add('hidden');
+            } else {
+                alert('Invalid PIN!');
+            }
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
@@ -733,26 +808,8 @@
             document.getElementById('mobileMenu').classList.add('hidden');
         }
 
-        function toggleMobileMenu() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        }
+        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
 
-        // PIN Security Lock
-        function lockApp() {
-            document.getElementById('pinLockScreen').classList.remove('hidden');
-            document.getElementById('pinInput').value = '';
-        }
-
-        function unlockWithPin() {
-            const pin = document.getElementById('pinInput').value;
-            if(pin === '1234' || pin.length === 4) {
-                document.getElementById('pinLockScreen').classList.add('hidden');
-            } else {
-                alert('Invalid PIN!');
-            }
-        }
-
-        // Account Dropdowns Population
         function populateAccountSelects() {
             const selects = ['incAccount', 'expAccount', 'recAccount', 'transferFrom', 'transferTo'];
             selects.forEach(id => {
@@ -774,7 +831,6 @@
             });
         }
 
-        // Balance Helper
         function adjustAccountBalance(accKey, amount) {
             if(accKey === 'cash') {
                 cashBalance += amount;
@@ -785,7 +841,6 @@
             }
         }
 
-        // Inter-Account Fund Transfer
         function executeFundTransfer(e) {
             e.preventDefault();
             const from = document.getElementById('transferFrom').value;
@@ -811,10 +866,9 @@
             });
 
             saveAndRefresh();
-            alert('Transfer completed successfully!');
+            alert('Transfer completed!');
         }
 
-        // Record Income
         function addIncomeRecord(e) {
             e.preventDefault();
             const amount = parseFloat(document.getElementById('incAmount').value);
@@ -837,7 +891,6 @@
             document.getElementById('incNote').value = '';
         }
 
-        // Record Expense
         function addExpenseRecord(e) {
             e.preventDefault();
             const amount = parseFloat(document.getElementById('expAmount').value);
@@ -860,7 +913,6 @@
             document.getElementById('expNote').value = '';
         }
 
-        // Recharge Module
         function processRecharge(e) {
             e.preventDefault();
             const mobile = document.getElementById('recMobile').value;
@@ -886,7 +938,6 @@
             document.getElementById('recAmount').value = '';
         }
 
-        // Loans Management
         function addLoanEntry(e) {
             e.preventDefault();
             loans.unshift({
@@ -920,7 +971,6 @@
             }
         }
 
-        // Bank Accounts & Cash
         function addBankAccount(e) {
             e.preventDefault();
             bankAccounts.push({
@@ -942,7 +992,6 @@
             alert('Cash Wallet balance updated!');
         }
 
-        // Modal Deletion Trigger
         function triggerDelete(id, type) {
             deleteTargetId = id;
             deleteTargetType = type;
@@ -963,7 +1012,6 @@
             closeDeleteModal();
         };
 
-        // Master Render & Refresh
         function saveAndRefresh() {
             localStorage.setItem('pf_transactions', JSON.stringify(transactions));
             localStorage.setItem('pf_loans', JSON.stringify(loans));
@@ -982,17 +1030,35 @@
                 if(t.type === 'expense') totalExp += t.amount;
             });
 
+            let totalBankBal = bankAccounts.reduce((sum, b) => sum + b.balance, 0);
+            const netWealth = cashBalance + totalBankBal + (totalInc - totalExp);
+
             document.getElementById('dashTotalIncome').innerText = `₹${totalInc.toFixed(2)}`;
             document.getElementById('dashTotalExpense').innerText = `₹${totalExp.toFixed(2)}`;
-            document.getElementById('dashBalance').innerText = `₹${(totalInc - totalExp).toFixed(2)}`;
+            document.getElementById('dashBankBalance').innerText = `₹${totalBankBal.toFixed(2)}`;
             document.getElementById('dashCashBalance').innerText = `₹${cashBalance.toFixed(2)}`;
+            
+            document.getElementById('dashBalance').innerText = `₹${netWealth.toFixed(2)}`;
+            document.getElementById('dashBalance').className = `text-xl font-bold mt-1 ${netWealth >= 0 ? 'text-indigo-600' : 'text-rose-600'}`;
+
+            const grid = document.getElementById('dashBankListGrid');
+            grid.innerHTML = '';
+            bankAccounts.forEach(b => {
+                grid.innerHTML += `
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-800">${b.name}</p>
+                            <p class="text-[10px] text-slate-400">Acc: XXXX-${b.accNo}</p>
+                        </div>
+                        <p class="text-sm font-bold text-blue-600">₹${b.balance.toFixed(2)}</p>
+                    </div>`;
+            });
 
             renderTables();
             checkNotifications();
         }
 
         function renderTables() {
-            // Income Table
             const incBody = document.getElementById('incomeTableBody');
             incBody.innerHTML = '';
             transactions.filter(t => t.type === 'income').forEach(t => {
@@ -1003,11 +1069,10 @@
                         <td class="p-3">${t.account}</td>
                         <td class="p-3 text-slate-500">${t.note}</td>
                         <td class="p-3 text-right font-bold text-emerald-600">+₹${t.amount.toFixed(2)}</td>
-                        <td class="p-3 text-center"><button onclick="triggerDelete(${t.id}, 'txn')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button></td>
+                        <td class="p-3 text-center"><button onclick="triggerDelete(${t.id}, 'txn')" class="text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
             });
 
-            // Expense Table
             const expBody = document.getElementById('expenseTableBody');
             expBody.innerHTML = '';
             transactions.filter(t => t.type === 'expense').forEach(t => {
@@ -1018,14 +1083,12 @@
                         <td class="p-3">${t.account}</td>
                         <td class="p-3 text-slate-500">${t.note}</td>
                         <td class="p-3 text-right font-bold text-rose-600">-₹${t.amount.toFixed(2)}</td>
-                        <td class="p-3 text-center"><button onclick="triggerDelete(${t.id}, 'txn')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button></td>
+                        <td class="p-3 text-center"><button onclick="triggerDelete(${t.id}, 'txn')" class="text-rose-600"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
             });
 
-            // Master Ledger Table
             filterMasterLedger();
 
-            // Recharge Table
             const recBody = document.getElementById('rechargeTableBody');
             recBody.innerHTML = '';
             transactions.filter(t => t.category === 'Recharge').forEach(t => {
@@ -1038,7 +1101,6 @@
                     </tr>`;
             });
 
-            // Loans Table
             const loanBody = document.getElementById('loansTableBody');
             loanBody.innerHTML = '';
             loans.forEach(l => {
@@ -1058,7 +1120,6 @@
                     </tr>`;
             });
 
-            // Banks Table
             const bankBody = document.getElementById('banksTableBody');
             bankBody.innerHTML = '';
             bankAccounts.forEach(b => {
@@ -1100,7 +1161,6 @@
             });
         }
 
-        // Smart Notifications Check
         function checkNotifications() {
             const list = document.getElementById('notifList');
             const badge = document.getElementById('notifBadge');
@@ -1123,13 +1183,8 @@
         }
 
         function toggleNotificationsModal() { document.getElementById('notifModal').classList.toggle('hidden'); }
+        function exportPdfReport() { window.print(); }
 
-        // PDF Report Export
-        function exportPdfReport() {
-            window.print();
-        }
-
-        // CSV Export
         function exportCsvReport() {
             let csv = "ID,Date,Type,Category,Account,Amount,Note\n";
             transactions.forEach(t => {
