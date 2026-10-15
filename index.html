@@ -647,6 +647,12 @@
     </div>
 
     <script>
+        // 💡 PERMANENT HARDCODE OPTION (Optional):
+        // If you don't want to re-type your keys in mobile/browser after refreshing, 
+        // you can paste your SUPABASE_URL and SUPABASE_KEY directly into these 2 variables:
+        const DEFAULT_SUPABASE_URL = ""; 
+        const DEFAULT_SUPABASE_KEY = "";
+
         let transactions = JSON.parse(localStorage.getItem('pf_transactions')) || [];
         let loans = JSON.parse(localStorage.getItem('pf_loans')) || [];
         let bankAccounts = JSON.parse(localStorage.getItem('pf_banks')) || [{ id: 1, name: 'SBI Bank', accNo: '4321', balance: 25000 }];
@@ -660,6 +666,22 @@
         let deleteTargetId = null;
         let deleteTargetType = null;
         let supabaseClient = null;
+
+        // Initialize Supabase configuration properly on startup
+        function initSupabaseConnection() {
+            const url = localStorage.getItem('pf_sp_url') || DEFAULT_SUPABASE_URL;
+            const key = localStorage.getItem('pf_sp_key') || DEFAULT_SUPABASE_KEY;
+
+            if (url && key && window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(url, key);
+                    document.getElementById('dbStatusBadge').innerText = "Connected (Cloud)";
+                    document.getElementById('dbStatusBadge').className = "bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded-full";
+                } catch(e) {
+                    console.error("Supabase init error:", e);
+                }
+            }
+        }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -686,7 +708,6 @@
             document.getElementById('authPage').classList.add('hidden');
             document.getElementById('loadingSplash').classList.remove('hidden');
             
-            // Sync with Supabase Cloud if connected
             await loadFromCloud();
 
             setTimeout(() => {
@@ -706,7 +727,6 @@
                     bankAccounts = data.payload.bankAccounts || bankAccounts;
                     cashBalance = data.payload.cashBalance !== undefined ? data.payload.cashBalance : cashBalance;
                     
-                    // Save to local cache
                     localStorage.setItem('pf_transactions', JSON.stringify(transactions));
                     localStorage.setItem('pf_loans', JSON.stringify(loans));
                     localStorage.setItem('pf_banks', JSON.stringify(bankAccounts));
@@ -739,7 +759,11 @@
             document.getElementById('mobileMenu').classList.add('hidden');
         }
 
-        function openDbConfigModal() { document.getElementById('dbConfigModal').classList.remove('hidden'); }
+        function openDbConfigModal() { 
+            document.getElementById('supabaseUrlInput').value = localStorage.getItem('pf_sp_url') || DEFAULT_SUPABASE_URL;
+            document.getElementById('supabaseKeyInput').value = localStorage.getItem('pf_sp_key') || DEFAULT_SUPABASE_KEY;
+            document.getElementById('dbConfigModal').classList.remove('hidden'); 
+        }
         function closeDbConfigModal() { document.getElementById('dbConfigModal').classList.add('hidden'); }
         function toggleNotificationsModal() { document.getElementById('notifModal').classList.toggle('hidden'); }
         function exportPdfReport() { window.print(); }
@@ -1017,15 +1041,8 @@
             document.getElementById('setUsername').value = storedUser;
             document.getElementById('setPinInput').value = storedPin;
 
-            const url = localStorage.getItem('pf_sp_url');
-            const key = localStorage.getItem('pf_sp_key');
-            if (url && key && window.supabase) {
-                try {
-                    supabaseClient = window.supabase.createClient(url, key);
-                    document.getElementById('dbStatusBadge').innerText = "Connected (Cloud)";
-                    document.getElementById('dbStatusBadge').className = "bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded-full";
-                } catch(e) {}
-            }
+            // Initialize Supabase connection
+            initSupabaseConnection();
 
             if (currentUser) {
                 showAppWithSplash();
@@ -1168,10 +1185,13 @@
 
             document.getElementById('dbConfigForm').onsubmit = function(e) {
                 e.preventDefault();
-                localStorage.setItem('pf_sp_url', document.getElementById('supabaseUrlInput').value);
-                localStorage.setItem('pf_sp_key', document.getElementById('supabaseKeyInput').value);
+                const urlVal = document.getElementById('supabaseUrlInput').value.trim();
+                const keyVal = document.getElementById('supabaseKeyInput').value.trim();
+                localStorage.setItem('pf_sp_url', urlVal);
+                localStorage.setItem('pf_sp_key', keyVal);
                 closeDbConfigModal();
-                alert('Cloud DB settings saved! Reloading...');
+                alert('Cloud DB settings saved successfully!');
+                initSupabaseConnection();
                 location.reload();
             };
 
