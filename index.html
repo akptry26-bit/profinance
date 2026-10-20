@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); }
@@ -128,7 +130,6 @@
                         <i class="fa-solid fa-bell text-lg sm:text-base"></i>
                         <span id="notifBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
                     </button>
-                    <button onclick="openDbConfigModal()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg text-base sm:text-sm" title="Database Settings"><i class="fa-solid fa-database"></i></button>
                     <button onclick="lockApp()" class="text-slate-500 hover:text-indigo-600 p-2 rounded-lg text-base sm:text-sm" title="Lock App"><i class="fa-solid fa-lock"></i></button>
                     <button id="logoutBtn" class="text-rose-600 hover:text-rose-700 text-xs font-semibold bg-rose-50 px-2.5 sm:px-3 py-2 rounded-lg border border-rose-100 transition flex items-center space-x-1">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -277,17 +278,24 @@
                 </div>
             </div>
 
-            <!-- EXPENSE MODULE -->
+            <!-- EXPENSE MODULE WITH UPI SCANNER -->
             <div id="tab-expense" class="tab-content hidden space-y-6">
                 <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-3xl mx-auto">
-                    <h2 class="text-sm sm:text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center"><i class="fa-solid fa-circle-minus text-rose-600 mr-2"></i> Record Expense</h2>
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center"><i class="fa-solid fa-circle-minus text-rose-600 mr-2"></i> Record Expense</h2>
+                        <button type="button" onclick="openQrScannerModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition flex items-center space-x-1">
+                            <i class="fa-solid fa-qrcode text-sm"></i>
+                            <span>Scan QR & Pay (UPI)</span>
+                        </button>
+                    </div>
+
                     <form id="expenseForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Amount (₹)</label>
                             <input type="number" id="expAmount" step="0.01" required placeholder="0.00" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Paid From Account</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Paid From Account (Cash / Bank)</label>
                             <select id="expAccount" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs"></select>
                         </div>
                         <div>
@@ -307,11 +315,15 @@
                             <input type="date" id="expDate" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs">
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Note / Description</label>
-                            <input type="text" id="expNote" placeholder="e.g., Grocery Purchase" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Note / Merchant Name</label>
+                            <input type="text" id="expNote" placeholder="e.g., Tea Stall / Grocery Shop" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs">
                         </div>
-                        <div class="sm:col-span-2">
-                            <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-xl text-xs transition shadow-sm">Save Expense Entry</button>
+                        <div class="sm:col-span-2 flex space-x-2">
+                            <button type="submit" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-xl text-xs transition shadow-sm">Save Expense Entry</button>
+                            <button type="button" id="payWithUpiBtn" onclick="launchUpiPaymentApp()" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl text-xs transition shadow-sm flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <span>Pay via GPay/PhonePe</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -569,8 +581,41 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-4xl mx-auto">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900 border-b border-slate-100 pb-2"><i class="fa-solid fa-cloud text-indigo-600 mr-2"></i> Cloud Database Configuration</h2>
+                    <form id="dbConfigForm" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Project URL</label>
+                            <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
+                            <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOi..." class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs">
+                        </div>
+                        <div class="flex justify-between items-center pt-2">
+                            <button type="button" id="resetLocalBtn" class="text-xs text-rose-600 font-semibold hover:underline">Reset Cloud Keys</button>
+                            <button type="submit" class="bg-indigo-600 text-white px-4 py-2.5 rounded-xl text-xs font-semibold hover:bg-indigo-700 transition">Save & Sync DB</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </main>
+    </div>
+
+    <!-- QR CODE SCANNER MODAL -->
+    <div id="qrScanModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-center">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center"><i class="fa-solid fa-qrcode text-indigo-600 mr-2"></i> Scan Merchant UPI QR</h3>
+                <button onclick="closeQrScannerModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div id="qrReader" class="overflow-hidden rounded-xl border-2 border-indigo-500 bg-slate-900 min-h-[250px]"></div>
+            <p class="text-[11px] text-slate-500">Align QR Code within camera box to scan automatically</p>
+
+            <button onclick="closeQrScannerModal()" class="w-full py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200 transition">Cancel Scan</button>
+        </div>
     </div>
 
     <!-- MODALS -->
@@ -613,29 +658,6 @@
         </div>
     </div>
 
-    <div id="dbConfigModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-900 flex items-center"><i class="fa-solid fa-cloud text-indigo-600 mr-2"></i> Cloud DB Config (Supabase)</h3>
-                <button id="closeDbModalBtn" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="dbConfigForm" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Project URL</label>
-                    <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
-                    <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOi..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
-                </div>
-                <div class="flex justify-between items-center pt-2">
-                    <button type="button" id="resetLocalBtn" class="text-xs text-rose-600 font-semibold hover:underline">Reset Local Storage</button>
-                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-indigo-700">Save & Connect</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="loanRepayModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
             <h3 class="font-bold text-slate-900">Record Loan Repayment</h3>
@@ -657,7 +679,6 @@
         </div>
     </div>
 
-    <!-- NOTIFICATION MODAL WITH CLEAR ALL -->
     <div id="notifModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -672,9 +693,9 @@
     </div>
 
     <script>
-        // ⚠️ PASTE YOUR SUPABASE CREDENTIALS HERE FOR AUTOMATIC GLOBAL SYNC ⚠️
-        const DEFAULT_SUPABASE_URL = ""; 
-        const DEFAULT_SUPABASE_KEY = "";
+        // ⚠️ PASTE YOUR DEFAULT SUPABASE CREDENTIALS HERE FOR BACKEND SYNC ⚠️
+        const DEFAULT_SUPABASE_URL = "YOUR_SUPABASE_URL_HERE"; 
+        const DEFAULT_SUPABASE_KEY = "YOUR_SUPABASE_KEY_HERE";
 
         let transactions = JSON.parse(localStorage.getItem('pf_transactions')) || [];
         let loans = JSON.parse(localStorage.getItem('pf_loans')) || [];
@@ -690,19 +711,93 @@
         let deleteTargetId = null;
         let deleteTargetType = null;
         let supabaseClient = null;
+        let html5QrScanner = null;
+        let scannedUpiUri = "";
 
         function initSupabaseConnection() {
             const url = localStorage.getItem('pf_sp_url') || DEFAULT_SUPABASE_URL;
             const key = localStorage.getItem('pf_sp_key') || DEFAULT_SUPABASE_KEY;
 
-            if (url && key && window.supabase) {
+            if (url && key && window.supabase && url !== "YOUR_SUPABASE_URL_HERE") {
                 try {
                     supabaseClient = window.supabase.createClient(url, key);
                     document.getElementById('dbStatusBadge').innerText = "Connected (Cloud)";
                     document.getElementById('dbStatusBadge').className = "bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full";
                 } catch(e) { console.error("Supabase error:", e); }
+            } else {
+                document.getElementById('dbStatusBadge').innerText = "Offline (Local)";
+                document.getElementById('dbStatusBadge').className = "bg-amber-50 text-amber-600 border border-amber-200 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full";
             }
         }
+
+        // --- QR SCANNER & UPI FUNCTIONS ---
+        function openQrScannerModal() {
+            document.getElementById('qrScanModal').classList.remove('hidden');
+            html5QrScanner = new Html5Qrcode("qrReader");
+            html5QrScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                onQrScanSuccess,
+                onQrScanError
+            ).catch(err => console.log("Camera access error", err));
+        }
+
+        function closeQrScannerModal() {
+            if (html5QrScanner) {
+                html5QrScanner.stop().then(() => {
+                    html5QrScanner.clear();
+                    document.getElementById('qrScanModal').classList.add('hidden');
+                }).catch(err => {
+                    document.getElementById('qrScanModal').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('qrScanModal').classList.add('hidden');
+            }
+        }
+
+        function onQrScanSuccess(decodedText) {
+            closeQrScannerModal();
+            if (decodedText.startsWith("upi://pay")) {
+                scannedUpiUri = decodedText;
+                const urlParams = new URLSearchParams(decodedText.replace("upi://pay?", ""));
+                const merchantName = urlParams.get("pn") || urlParams.get("pa") || "UPI Merchant";
+                const amount = urlParams.get("am") || "";
+
+                document.getElementById('expNote').value = decodeURIComponent(merchantName);
+                if (amount) document.getElementById('expAmount').value = amount;
+                
+                document.getElementById('payWithUpiBtn').classList.remove('hidden');
+                showToast("UPI QR Scanned!", "Merchant details loaded. Select Bank and Pay!");
+            } else {
+                showToast("Invalid QR", "This is not a valid UPI Payment QR Code.");
+            }
+        }
+
+        function onQrScanError(error) {
+            // Silence standard frame scan errors
+        }
+
+        function launchUpiPaymentApp() {
+            const amount = document.getElementById('expAmount').value;
+            const note = document.getElementById('expNote').value;
+            
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid expense amount!");
+                return;
+            }
+
+            if (scannedUpiUri) {
+                let finalUri = scannedUpiUri;
+                if (!finalUri.includes("am=")) {
+                    finalUri += `&am=${amount}`;
+                }
+                // Deep link launch mobile UPI apps (GPay, PhonePe, Paytm, BHIM)
+                window.location.href = finalUri;
+            } else {
+                alert("No UPI QR Code scanned. Please scan QR first!");
+            }
+        }
+        // --- END QR SCANNER ---
 
         function showToast(title, message) {
             document.getElementById('toastTitle').innerText = title;
@@ -813,12 +908,6 @@
             document.getElementById('mobileMenu').classList.add('hidden');
         }
 
-        function openDbConfigModal() { 
-            document.getElementById('supabaseUrlInput').value = localStorage.getItem('pf_sp_url') || DEFAULT_SUPABASE_URL;
-            document.getElementById('supabaseKeyInput').value = localStorage.getItem('pf_sp_key') || DEFAULT_SUPABASE_KEY;
-            document.getElementById('dbConfigModal').classList.remove('hidden'); 
-        }
-        function closeDbConfigModal() { document.getElementById('dbConfigModal').classList.add('hidden'); }
         function toggleNotificationsModal() { document.getElementById('notifModal').classList.toggle('hidden'); }
         function exportPdfReport() { window.print(); }
 
@@ -891,7 +980,7 @@
         function adjustAccountBalance(accKey, amount) {
             if(accKey === 'cash') {
                 cashBalance += amount;
-            } else if(accKey.startsWith('bank_')) {
+            } else if(accKey && accKey.startsWith('bank_')) {
                 const bankId = parseInt(accKey.replace('bank_', ''));
                 const bank = bankAccounts.find(b => b.id === bankId);
                 if(bank) bank.balance += amount;
@@ -911,6 +1000,8 @@
         function refreshUI() {
             populateAccountSelects();
             document.getElementById('cashWalletInput').value = cashBalance;
+            document.getElementById('supabaseUrlInput').value = localStorage.getItem('pf_sp_url') || DEFAULT_SUPABASE_URL;
+            document.getElementById('supabaseKeyInput').value = localStorage.getItem('pf_sp_key') || DEFAULT_SUPABASE_KEY;
 
             let totalInc = 0, totalExp = 0;
             transactions.forEach(t => {
@@ -1120,17 +1211,44 @@
             document.getElementById('closeNotifBtn').onclick = toggleNotificationsModal;
             document.getElementById('unlockPinBtn').onclick = unlockWithPin;
             document.getElementById('cancelDeleteBtn').onclick = closeDeleteModal;
-            document.getElementById('closeDbModalBtn').onclick = closeDbConfigModal;
-            document.getElementById('cancelRepayBtn').onclick = closeRepayModal;
             document.getElementById('cancelBankEditBtn').onclick = closeBankEditModal;
+            document.getElementById('cancelRepayBtn').onclick = closeRepayModal;
 
+            // SMART DELETION WITH REVERSAL LOGIC
             document.getElementById('confirmDeleteBtn').onclick = function() {
-                if(deleteTargetType === 'txn') transactions = transactions.filter(t => t.id !== deleteTargetId);
-                else if(deleteTargetType === 'loan') loans = loans.filter(l => l.id !== deleteTargetId);
-                else if(deleteTargetType === 'bank') bankAccounts = bankAccounts.filter(b => b.id !== deleteTargetId);
+                if(deleteTargetType === 'txn') {
+                    const t = transactions.find(item => item.id === deleteTargetId);
+                    if(t) {
+                        if(t.type === 'income') {
+                            adjustAccountBalance(t.account, -t.amount);
+                        } else if(t.type === 'expense' || t.category === 'Recharge') {
+                            adjustAccountBalance(t.account, t.amount);
+                        } else if(t.type === 'transfer') {
+                            const parts = t.account.split(' ➔ ');
+                            adjustAccountBalance(parts[0], t.amount);
+                            adjustAccountBalance(parts[1], -t.amount);
+                        }
+                    }
+                    transactions = transactions.filter(item => item.id !== deleteTargetId);
+                } 
+                else if(deleteTargetType === 'loan') {
+                    const l = loans.find(item => item.id === deleteTargetId);
+                    if(l) {
+                        if(l.type === 'Given') {
+                            adjustAccountBalance(l.account, l.amount);
+                        } else {
+                            adjustAccountBalance(l.account, -l.amount);
+                        }
+                    }
+                    loans = loans.filter(item => item.id !== deleteTargetId);
+                }
+                else if(deleteTargetType === 'bank') {
+                    bankAccounts = bankAccounts.filter(b => b.id !== deleteTargetId);
+                }
+
                 saveAndRefresh();
                 closeDeleteModal();
-                triggerNotification("Deleted", "Record deleted successfully!");
+                triggerNotification("Deleted & Reverted", "Record removed and balance adjusted!");
             };
 
             document.getElementById('bankEditForm').onsubmit = function(e) {
@@ -1170,16 +1288,32 @@
                 triggerNotification("Income Recorded! 📈", `₹${amount} added under ${cat}`);
             };
 
+            // EXPENSE SUBMISSION WITH BANK DEDUCTION
             document.getElementById('expenseForm').onsubmit = function(e) {
                 e.preventDefault();
                 const amount = parseFloat(document.getElementById('expAmount').value);
                 const acc = document.getElementById('expAccount').value;
                 const cat = document.getElementById('expCategory').value;
+                
+                // Deduct selected Bank/Cash account
                 adjustAccountBalance(acc, -amount);
-                transactions.unshift({ id: Date.now(), type: 'expense', category: cat, account: acc, amount, date: document.getElementById('expDate').value, note: document.getElementById('expNote').value || 'Expense logged' });
+                
+                transactions.unshift({ 
+                    id: Date.now(), 
+                    type: 'expense', 
+                    category: cat, 
+                    account: acc, 
+                    amount, 
+                    date: document.getElementById('expDate').value, 
+                    note: document.getElementById('expNote').value || 'Expense logged' 
+                });
+
                 document.getElementById('expAmount').value = '';
                 document.getElementById('expNote').value = '';
-                triggerNotification("Expense Recorded 📉", `₹${amount} debited for ${cat}`);
+                document.getElementById('payWithUpiBtn').classList.add('hidden');
+                scannedUpiUri = "";
+
+                triggerNotification("Expense Recorded 📉", `₹${amount} debited from selected account`);
             };
 
             document.getElementById('rechargeForm').onsubmit = function(e) {
@@ -1206,7 +1340,6 @@
                 triggerNotification("Recharge Successful! 📱⚡", `₹${amount} recharged for ${mobile} (${op})`);
             };
 
-            // UPDATED LOAN HANDLER WITH CASH/BANK SUPPORT
             document.getElementById('loanForm').onsubmit = function(e) {
                 e.preventDefault();
                 const person = document.getElementById('loanPerson').value;
@@ -1214,7 +1347,6 @@
                 const amount = parseFloat(document.getElementById('loanAmount').value);
                 const acc = document.getElementById('loanAccount').value;
 
-                // Adjust balance based on loan type (Given = Money Out, Taken = Money In)
                 if (type === 'Given') {
                     adjustAccountBalance(acc, -amount);
                 } else {
@@ -1236,7 +1368,6 @@
                 triggerNotification("Loan Logged 🤝", `Loan (${type}) of ₹${amount} for ${person} saved via ${acc}`);
             };
 
-            // UPDATED LOAN REPAYMENT HANDLER
             document.getElementById('repayForm').onsubmit = function(e) {
                 e.preventDefault();
                 const id = parseInt(document.getElementById('repayLoanId').value);
@@ -1247,7 +1378,6 @@
                 if(loan) { 
                     loan.repaid = Math.min(loan.amount, loan.repaid + amt); 
                     
-                    // Adjust account (If Given loan repaid = Money In, If Taken loan repaid = Money Out)
                     if (loan.type === 'Given') {
                         adjustAccountBalance(acc, amt);
                     } else {
@@ -1302,7 +1432,6 @@
                 const keyVal = document.getElementById('supabaseKeyInput').value.trim();
                 localStorage.setItem('pf_sp_url', urlVal);
                 localStorage.setItem('pf_sp_key', keyVal);
-                closeDbConfigModal();
                 initSupabaseConnection();
                 showToast("Cloud DB Connected", "Syncing ledger...");
                 setTimeout(() => location.reload(), 1000);
@@ -1312,9 +1441,9 @@
                 localStorage.removeItem('pf_sp_url');
                 localStorage.removeItem('pf_sp_key');
                 supabaseClient = null;
-                document.getElementById('dbStatusBadge').innerText = "Offline (Local)";
-                document.getElementById('dbStatusBadge').className = "bg-amber-50 text-amber-600 border border-amber-200 text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full";
-                closeDbConfigModal();
+                initSupabaseConnection();
+                showToast("Cloud Keys Reset", "Using default backend configuration.");
+                setTimeout(() => location.reload(), 1000);
             };
         });
     </script>
